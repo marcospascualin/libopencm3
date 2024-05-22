@@ -21,28 +21,27 @@
 #include <libopencm3/stm32/memorymap.h>
 
 #if defined(STM32F0)
-#       include <libopencm3/stm32/f0/iwdg.h>
+#include <libopencm3/stm32/f0/iwdg.h>
 #elif defined(STM32F1)
-#       include <libopencm3/stm32/f1/iwdg.h>
+#include <libopencm3/stm32/f1/iwdg.h>
 #elif defined(STM32F2)
-#       include <libopencm3/stm32/f2/iwdg.h>
+#include <libopencm3/stm32/f2/iwdg.h>
 #elif defined(STM32F3)
-#       include <libopencm3/stm32/f3/iwdg.h>
+#include <libopencm3/stm32/f3/iwdg.h>
 #elif defined(STM32F4)
-#       include <libopencm3/stm32/f4/iwdg.h>
+#include <libopencm3/stm32/f4/iwdg.h>
 #elif defined(STM32F7)
-#       include <libopencm3/stm32/f7/iwdg.h>
+#include <libopencm3/stm32/f7/iwdg.h>
+#elif defined(STM32H7)
+#include <libopencm3/stm32/h7/iwdg.h>
 #elif defined(STM32L0)
-#       include <libopencm3/stm32/l0/iwdg.h>
+#include <libopencm3/stm32/l0/iwdg.h>
 #elif defined(STM32L1)
-#       include <libopencm3/stm32/l1/iwdg.h>
+#include <libopencm3/stm32/l1/iwdg.h>
 #elif defined(STM32L4)
-#       include <libopencm3/stm32/l4/iwdg.h>
+#include <libopencm3/stm32/l4/iwdg.h>
 #elif defined(STM32G0)
-#       include <libopencm3/stm32/g0/iwdg.h>
-#elif defined(STM32G4)
-#       include <libopencm3/stm32/g4/iwdg.h>
+#include <libopencm3/stm32/g0/iwdg.h>
 #else
-#       error "stm32 family not defined."
+#error "stm32 family not defined."
 #endif
-

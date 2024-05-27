@@ -33,4 +33,6 @@
 
 #include <libopencm3/stm32/common/iwdg_common_v2.h>
 
+#define IWDG_BASE IWDG1_BASE
+
 #endif

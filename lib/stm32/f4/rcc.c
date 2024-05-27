@@ -923,4 +923,201 @@ uint32_t rcc_get_spi_clk_freq(uint32_t spi) {
 		return rcc_apb2_frequency;
 	}
 }
+
+
+
+//
+// void rcc_set_rtc_clock_source(enum rcc_osc rtcclk_source)
+// {
+// uint32_t reg32;
+//
+// /* Clear the RTC clock source selection bits */
+// RCC_BDCR &= ~(RCC_BDCR_RTCSEL_MASK<< RCC_BDCR_RTCSEL_SHIFT);
+//
+// /* Set the RTC clock source selection bits */
+// switch (rtcclk_source) {
+// case RCC_LSE:
+// RCC_BDCR |= RCC_BDCR_RTCSEL_LSE << RCC_BDCR_RTCSEL_SHIFT;
+// break;
+// case RCC_LSI:
+// RCC_BDCR |= RCC_BDCR_RTCSEL_LSI << RCC_BDCR_RTCSEL_SHIFT;
+// break;
+// case RCC_HSE:
+// RCC_BDCR |= RCC_BDCR_RTCSEL_HSE << RCC_BDCR_RTCSEL_SHIFT;
+// break;
+// }
+//
+// /* Wait for the RTC clock source to be ready */
+// reg32 = RCC_BDCR;
+// while ((reg32 & (RCC_BDCR_RTCSEL_MASK << RCC_BDCR_RTCSEL_SHIFT))!= (rtcclk_source << RCC_BDCR_RTCSEL_SHIFT))
+// {
+// reg32 = RCC_BDCR;
+// }
+// }
+
+void rcc_enable_rtc_clock(void)
+{
+  RCC_BDCR |= RCC_BDCR_RTCEN;
+}
+
+void rcc_backupdomain_reset(void)
+{
+  RCC_BDCR |= RCC_BDCR_BDRST;
+  RCC_BDCR &= ~RCC_BDCR_BDRST;
+}
+uint32_t rcc_get_hpre_prescaler(void)
+{
+  uint32_t hpre = (RCC_CFGR >> RCC_CFGR_HPRE_SHIFT) & RCC_CFGR_HPRE_MASK;
+  switch (hpre)
+  {
+  case RCC_CFGR_HPRE_NODIV:
+    return 1;
+  case RCC_CFGR_HPRE_DIV_2:
+    return 2;
+  case RCC_CFGR_HPRE_DIV_4:
+    return 4;
+  case RCC_CFGR_HPRE_DIV_8:
+    return 8;
+  case RCC_CFGR_HPRE_DIV_16:
+    return 16;
+  case RCC_CFGR_HPRE_DIV_64:
+    return 64;
+  case RCC_CFGR_HPRE_DIV_128:
+    return 128;
+  case RCC_CFGR_HPRE_DIV_256:
+    return 256;
+  case RCC_CFGR_HPRE_DIV_512:
+    return 512;
+  default:
+    /* Should not happen */
+    return 1;
+  }
+}
+
+static uint8_t APBAHBPrescTable[16] = {0, 0, 0, 0, 1, 2, 3, 4, 1, 2, 3, 4, 6, 7, 8, 9};
+
+void rcc_get_clocks_freq(rcc_clocks *clocks)
+{
+  uint32_t tmp = 0, presc = 0, pllvco = 0, pllp = 2, pllsource = 0, pllm = 2, plln = 1;
+
+  /* Get SYSCLK source -------------------------------------------------------*/
+  tmp = (RCC_CFGR >> RCC_CFGR_SWS_SHIFT) & RCC_CFGR_SWS_MASK;
+
+  switch (tmp)
+  {
+  case RCC_CFGR_SWS_HSI: /* HSI used as system clock source */
+    clocks->sysclk_freq = HSI_VALUE;
+    break;
+
+  case RCC_CFGR_SWS_HSE: /* HSE used as system clock  source */
+    clocks->sysclk_freq = HSE_VALUE;
+    break;
+
+  case RCC_CFGR_SWS_PLL: /* PLL used as system clock  source */
+
+    /* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLLM) * PLLN
+       SYSCLK = PLL_VCO / PLLP
+       */
+    pllsource = (RCC_PLLCFGR & RCC_PLLCFGR_PLLSRC) >> 22;
+    pllm = (RCC_PLLCFGR >> RCC_PLLCFGR_PLLM_SHIFT) & RCC_PLLCFGR_PLLM_MASK;
+    plln = ((RCC_PLLCFGR >> RCC_PLLCFGR_PLLN_SHIFT) & RCC_PLLCFGR_PLLN_MASK);
+
+    if (pllsource != 0)
+    {
+      /* HSE used as PLL clock source */
+      pllvco = (HSE_VALUE / pllm) * plln;
+    }
+    else
+    {
+      /* HSI used as PLL clock source */
+      pllvco = (HSI_VALUE / pllm) * plln;
+    }
+
+    pllp = ((((RCC_PLLCFGR >> RCC_PLLCFGR_PLLP_SHIFT) & RCC_PLLCFGR_PLLP_MASK) /*>>16*/) + 1) * 2;
+    clocks->sysclk_freq = pllvco / pllp;
+    break;
+
+  default:
+    clocks->sysclk_freq = HSI_VALUE;
+    break;
+  }
+
+  /* Compute HCLK, PCLK1 and PCLK2 clocks frequencies ------------------------*/
+
+  /* Get HCLK prescaler */
+  tmp = (RCC_CFGR >> RCC_CFGR_HPRE_SHIFT) & RCC_CFGR_HPRE_MASK;
+
+  presc = APBAHBPrescTable[tmp];
+
+  /* HCLK clock frequency */
+  clocks->hclk_freq = clocks->sysclk_freq >> presc;
+
+  /* Get PCLK1 prescaler */
+  tmp = (RCC_CFGR >> RCC_CFGR_PPRE1_SHIFT) & RCC_CFGR_PPRE1_MASK;
+
+  presc = APBAHBPrescTable[tmp];
+
+  /* PCLK1 clock frequency */
+  clocks->pclk1_freq = clocks->hclk_freq >> presc;
+
+  /* Get PCLK2 prescaler */
+  tmp = (RCC_CFGR >> RCC_CFGR_PPRE2_SHIFT) & RCC_CFGR_PPRE2_MASK;
+
+  presc = APBAHBPrescTable[tmp];
+
+  /* PCLK2 clock frequency */
+  clocks->pclk2_freq = clocks->hclk_freq >> presc;
+}
+/**
+ * @brief  Clears the RCC reset flags.
+ *         The reset flags are: RCC_FLAG_PINRST, RCC_FLAG_PORRST,  RCC_FLAG_SFTRST,
+ *         RCC_FLAG_IWDGRST, RCC_FLAG_WWDGRST, RCC_FLAG_LPWRRST
+ * @param  None
+ * @retval None
+ */
+void rcc_clear_flag(void)
+{
+  /* Set RMVF bit to clear the reset flags */
+  RCC_CSR |= RCC_CSR_RMVF;
+}
+
+uint8_t rcc_get_flag_status(uint32_t rcc_flag)
+{
+  //	 uint32_t tmp = 0;
+  //	  uint32_t statusreg = 0;
+  //	  uint8_t bitstatus = 0;
+  //
+  //	  /* Get the RCC register index */
+  //	  tmp = rcc_flag >> 5;
+  //	  if (tmp == 1)               /* The flag to check is in CR register */
+  //	  {
+  //	    statusreg = RCC_CR;
+  //	  }
+  //	  else if (tmp == 2)          /* The flag to check is in BDCR register */
+  //	  {
+  //	    statusreg = RCC_BDCR;
+  //	  }
+  //	  else                       /* The flag to check is in CSR register */
+  //	  {
+  //	    statusreg = RCC_CSR;
+  //	  }
+  //
+  //	  /* Get the flag position */
+  //	  tmp = rcc_flag & RCC_FLAG_MASK;
+  //	  if ((statusreg & ((uint32_t)1 << tmp)) != (uint32_t)0)
+  //	  {
+  //	    bitstatus = 1;
+  //	  }
+  //	  else
+  //	  {
+  //	    bitstatus = 0;
+  //	  }
+  //	  /* Return the flag status */
+  //	  return bitstatus;
+
+  //	return ((RCC_CSR & rcc_flag) != 0);
+  return ((RCC_CSR & rcc_flag) != 0) ||
+         ((RCC_BDCR & rcc_flag) != 0) ||
+         ((RCC_CR & rcc_flag) != 0);
+}
 /**@}*/

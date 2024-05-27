@@ -40,6 +40,8 @@ void rtc_disable_wakeup_timer(void);
 void rtc_enable_wakeup_timer_interrupt(void);
 void rtc_disable_wakeup_timer_interrupt(void);
 
+void rcc_set_rtc_clock_source(enum rcc_osc rtcclk_source);
+
 END_DECLS
 
 #endif

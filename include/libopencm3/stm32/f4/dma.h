@@ -33,5 +33,10 @@ LGPL License Terms @ref lgpl_license
 
 #include <libopencm3/stm32/common/dma_common_f24.h>
 
+#ifdef STM32F423
+#pragma message "Patching DMA_SxCR_CHSEL_MASK"
+#undef DMA_SxCR_CHSEL_MASK
+#define DMA_SxCR_CHSEL_MASK (8 << 25) /*fix stm32f423xx*/
 #endif
 
+#endif

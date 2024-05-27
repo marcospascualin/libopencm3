@@ -48,8 +48,8 @@
  * @note 8 32bit Registers
  * @note Single register on CM0
  */
-#define NVIC_ISER(iser_id)		MMIO32(NVIC_BASE + 0x00 + \
-						((iser_id) * 4))
+#define NVIC_ISER(iser_id) MMIO32(NVIC_BASE + 0x00 + \
+								  ((iser_id) * 4))
 
 /* NVIC_BASE + 0x020 (0xE000 E120 - 0xE000 E17F): Reserved */
 
@@ -57,8 +57,8 @@
  * @note 8 32bit Registers
  * @note Single register on CM0
  */
-#define NVIC_ICER(icer_id)		MMIO32(NVIC_BASE + 0x80 + \
-						((icer_id) * 4))
+#define NVIC_ICER(icer_id) MMIO32(NVIC_BASE + 0x80 + \
+								  ((icer_id) * 4))
 
 /* NVIC_BASE + 0x0A0 (0xE000 E1A0 - 0xE000 E1FF): Reserved */
 
@@ -66,8 +66,8 @@
  * @note 8 32bit Registers
  * @note Single register on CM0
  */
-#define NVIC_ISPR(ispr_id)		MMIO32(NVIC_BASE + 0x100 + \
-						((ispr_id) * 4))
+#define NVIC_ISPR(ispr_id) MMIO32(NVIC_BASE + 0x100 + \
+								  ((ispr_id) * 4))
 
 /* NVIC_BASE + 0x120 (0xE000 E220 - 0xE000 E27F): Reserved */
 
@@ -75,8 +75,8 @@
  * @note 8 32bit Registers
  * @note Single register on CM0
  */
-#define NVIC_ICPR(icpr_id)		MMIO32(NVIC_BASE + 0x180 + \
-						((icpr_id) * 4))
+#define NVIC_ICPR(icpr_id) MMIO32(NVIC_BASE + 0x180 + \
+								  ((icpr_id) * 4))
 
 /* NVIC_BASE + 0x1A0 (0xE000 E2A0 - 0xE00 E2FF): Reserved */
 
@@ -84,8 +84,8 @@
 #if defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7EM__)
 /** IABR: Interrupt Active Bit Register
  * @note 8 32bit Registers */
-#define NVIC_IABR(iabr_id)		MMIO32(NVIC_BASE + 0x200 + \
-						((iabr_id) * 4))
+#define NVIC_IABR(iabr_id) MMIO32(NVIC_BASE + 0x200 + \
+								  ((iabr_id) * 4))
 #endif
 
 /* NVIC_BASE + 0x220 (0xE000 E320 - 0xE000 E3FF): Reserved */
@@ -95,16 +95,16 @@
  * @note 32 8bit Registers on CM0, requires word access
  */
 #if defined(__ARM_ARCH_6M__)
-#define NVIC_IPR32(ipr_id)		MMIO32(NVIC_BASE + 0x300 + \
-						((ipr_id) * 4))
+#define NVIC_IPR32(ipr_id) MMIO32(NVIC_BASE + 0x300 + \
+								  ((ipr_id) * 4))
 #else
-#define NVIC_IPR(ipr_id)		MMIO8(NVIC_BASE + 0x300 + \
-						(ipr_id))
+#define NVIC_IPR(ipr_id) MMIO8(NVIC_BASE + 0x300 + \
+							   (ipr_id))
 #endif
 
 #if defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7EM__)
 /** STIR: Software Trigger Interrupt Register */
-#define NVIC_STIR			MMIO32(STIR_BASE)
+#define NVIC_STIR MMIO32(STIR_BASE)
 #endif
 
 /**@}*/
@@ -117,27 +117,27 @@
 
 IRQ numbers -3 and -6 to -9 are reserved
 @{*/
-#define NVIC_NMI_IRQ			-14
-#define NVIC_HARD_FAULT_IRQ		-13
+#define NVIC_NMI_IRQ -14
+#define NVIC_HARD_FAULT_IRQ -13
 
 /* Those defined only on ARMv7 and above */
 #if defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7EM__)
-#define NVIC_MEM_MANAGE_IRQ		-12
-#define NVIC_BUS_FAULT_IRQ		-11
-#define NVIC_USAGE_FAULT_IRQ		-10
+#define NVIC_MEM_MANAGE_IRQ -12
+#define NVIC_BUS_FAULT_IRQ -11
+#define NVIC_USAGE_FAULT_IRQ -10
 #endif
 
 /* irq numbers -6 to -9 are reserved */
-#define NVIC_SV_CALL_IRQ		-5
+#define NVIC_SV_CALL_IRQ -5
 
 /* Those defined only on ARMv7 and above */
 #if defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7EM__)
-#define DEBUG_MONITOR_IRQ		-4
+#define DEBUG_MONITOR_IRQ -4
 #endif
 
 /* irq number -3 reserved */
-#define NVIC_PENDSV_IRQ			-2
-#define NVIC_SYSTICK_IRQ		-1
+#define NVIC_PENDSV_IRQ -2
+#define NVIC_SYSTICK_IRQ -1
 /**@}*/
 
 /* @note User interrupts are family specific and are defined in a family
@@ -157,6 +157,7 @@ void nvic_set_pending_irq(uint8_t irqn);
 void nvic_clear_pending_irq(uint8_t irqn);
 uint8_t nvic_get_irq_enabled(uint8_t irqn);
 void nvic_set_priority(uint8_t irqn, uint8_t priority);
+void nvic_set_priority_pre_sub(uint8_t irqn, uint8_t preempt, uint8_t sub);
 
 /* Those defined only on ARMv7 and above */
 #if defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7EM__)

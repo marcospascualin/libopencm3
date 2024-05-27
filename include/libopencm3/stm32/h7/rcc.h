@@ -115,13 +115,11 @@ LGPL License Terms @ref lgpl_license
 #define RCC_C1_APB2LPENR (RCC_APB2LPENR + 0x60)
 #define RCC_C1_APB4LPENR (RCC_APB4LPENR + 0x60)
 
-#define RCC_BDCR                  MMIO32(RCC_BASE + 0x70)
-#define RCC_CSR                   MMIO32(RCC_BASE + 0x74)
-#define RCC_SSCGR                 MMIO32(RCC_BASE + 0x80)
-#define RCC_PLLI2SCFGR            MMIO32(RCC_BASE + 0x84)
-#define RCC_PLLSAICFGR            MMIO32(RCC_BASE + 0x88)
-#define RCC_DCKCFGR1              MMIO32(RCC_BASE + 0x8C)
-#define RCC_DCKCFGR2              MMIO32(RCC_BASE + 0x90)
+#define RCC_SSCGR MMIO32(RCC_BASE + 0x80)
+#define RCC_PLLI2SCFGR MMIO32(RCC_BASE + 0x84)
+#define RCC_PLLSAICFGR MMIO32(RCC_BASE + 0x88)
+#define RCC_DCKCFGR1 MMIO32(RCC_BASE + 0x8C)
+#define RCC_DCKCFGR2 MMIO32(RCC_BASE + 0x90)
 /**@}*/
 
 /** @defgroup rcc_cr_values RCC_CR Values
@@ -358,6 +356,23 @@ LGPL License Terms @ref lgpl_license
 #define RCC_BDCR_LSEON (1 << 0)
 /**@}*/
 
+/** @defgroup rcc_rsr_values RCC_RSR Values.
+ * @ingroup rcc_registers
+@{*/
+#define RCC_RSR_LPWRRSTF (1 << 30)
+#define RCC_RSR_WWDG1RSTF (1 << 28)
+#define RCC_RSR_IWDG1RSTF (1 << 26)
+#define RCC_RSR_SFTRSTF (1 << 24)
+#define RCC_RSR_PORRSTF (1 << 23)
+#define RCC_RSR_PINRSTF (1 << 22)
+#define RCC_RSR_BORRSTF (1 << 21)
+#define RCC_RSR_D2RSTF (1 << 20)
+#define RCC_RSR_D1RSTF (1 << 19)
+#define RCC_RSR_CPURSTF (1 << 17)
+#define RCC_RSR_RMVF (1 << 16)
+
+/**@}*/
+
 /** @defgroup rcc_csr_values RCC_CSR Values.
  * @ingroup rcc_registers
 @{*/
@@ -424,7 +439,7 @@ LGPL License Terms @ref lgpl_license
 #define RCC_D2CCIP2R_CECSEL_SHIFT 22
 #define RCC_D2CCIP2R_USBSEL_SHIFT 20
 #define RCC_D2CCIP2R_I2C123SEL_SHIFT 12
-#define RCC_D2CCIP2R_RNGSEL_MASK            0x3
+#define RCC_D2CCIP2R_RNGSEL_MASK 0x3
 #define RCC_D2CCIP2R_RNGSEL_SHIFT 8
 #define RCC_D2CCIP2R_USART16SEL_SHIFT 3
 #define RCC_D2CCIP2R_USART234578SEL_SHIFT 0
@@ -433,13 +448,13 @@ LGPL License Terms @ref lgpl_license
 /** @defgroup rcc_d2ccip2r_values RCC_D2CCIP2R Values
  * @ingroup rcc_registers
  * @{*/
-#define RCC_D2CCIP2R_RNGSEL_HSI48           0
-#define RCC_D2CCIP2R_RNGSEL_PLL1Q           1
-#define RCC_D2CCIP2R_RNGSEL_LSE             2
-#define RCC_D2CCIP2R_RNGSEL_LSI             3
+#define RCC_D2CCIP2R_RNGSEL_HSI48 0
+#define RCC_D2CCIP2R_RNGSEL_PLL1Q 1
+#define RCC_D2CCIP2R_RNGSEL_LSE 2
+#define RCC_D2CCIP2R_RNGSEL_LSI 3
 #define RCC_D2CCIP2R_USART16SEL_PCLK2 0
 #define RCC_D2CCIP2R_USART234578SEL_PCLK1 0
-#define RCC_D2CCIP2R_USARTSEL_PCLK          0
+#define RCC_D2CCIP2R_USARTSEL_PCLK 0
 #define RCC_D2CCIP2R_USARTSEL_PLL2Q 1
 #define RCC_D2CCIP2R_USARTSEL_PLL3Q 2
 #define RCC_D2CCIP2R_USARTSEL_HSI 3
@@ -475,11 +490,13 @@ enum rcc_osc
 };
 
 /** PLL Configuration structure. */
-struct rcc_pll_config {
+struct rcc_pll_config
+{
   enum rcc_osc sysclock_source; /**< SYSCLK source input selection. */
   uint8_t pll_source;           /**< RCC_PLLCKSELR_PLLSRC_xxx value. */
   uint32_t hse_frequency;       /**< User specified HSE frequency, 0 if none. */
-	struct pll_config {
+  struct pll_config
+  {
     uint8_t divm;                   /**< Pre-divider value for each PLL. 0-64 integers. */
     uint16_t divn;                  /**< Multiplier, 0-512 integer. */
     uint8_t divp;                   /**< Post divider for PLLP clock. */
@@ -493,9 +510,9 @@ struct rcc_pll_config {
   uint8_t ppre3;                    /**< APB3 Peripheral prescaler note: domain 1. */
   uint8_t ppre4;                    /**< APB4 Peripheral prescaler note: domain 3. */
   uint8_t flash_waitstates;         /**< Latency Value to set for flahs. */
-	enum pwr_vos_scale voltage_scale; /**< LDO/SMPS Voltage scale used for this frequency. */
-	enum pwr_sys_mode power_mode;     /**< LDO/SMPS configuration for device. */
-	uint8_t smps_level;               /**< If using SMPS, voltage level to set. */
+  enum pwr_vos_scale voltage_scale; /**< LDO/SMPS Voltage scale used for this frequency. */
+  enum pwr_sys_mode power_mode;     /**< LDO/SMPS configuration for device. */
+  uint8_t smps_level;               /**< If using SMPS, voltage level to set. */
 };
 
 #define _REG_BIT(base, bit) (((base) << 5) + (bit))
@@ -841,6 +858,14 @@ void rcc_set_spi45_clksel(uint8_t clksel);
  * @sa rcc_set_peripheral_clk_sel for equivalent generic functionality
  */
 void rcc_set_rng_clksel(uint8_t clksel);
+
+void rcc_clear_flag(void);
+
+uint8_t rcc_get_flag_status(uint32_t rcc_flag);
+
+void rcc_enable_rtc_clock(void);
+
+void rcc_backupdomain_reset(void);
 
 END_DECLS
 /**@}*/

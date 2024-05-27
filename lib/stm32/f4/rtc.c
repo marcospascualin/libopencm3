@@ -28,6 +28,7 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/exti.h>
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/stm32/rtc.h>
@@ -36,7 +37,7 @@
 
 /*---------------------------------------------------------------------------*/
 /** @brief Enable the wakeup timer
-    @warning You must unlock the registers before using this function
+	@warning You must unlock the registers before using this function
 
 */
 void rtc_enable_wakeup_timer(void)
@@ -47,7 +48,7 @@ void rtc_enable_wakeup_timer(void)
 
 /*---------------------------------------------------------------------------*/
 /** @brief Disable the wakeup timer
-    @warning You must unlock the registers before using this function
+	@warning You must unlock the registers before using this function
 
 */
 void rtc_disable_wakeup_timer(void)
@@ -58,7 +59,7 @@ void rtc_disable_wakeup_timer(void)
 
 /*---------------------------------------------------------------------------*/
 /** @brief Enable the wakeup timer interrupt
-    @warning You must unlock the registers before using this function
+	@warning You must unlock the registers before using this function
 
 */
 void rtc_enable_wakeup_timer_interrupt(void)
@@ -77,12 +78,12 @@ void rtc_enable_wakeup_timer_interrupt(void)
 	nvic_set_priority(NVIC_RTC_WKUP_IRQ, 1);
 
 	/* 3. Configure the RTC to generate the RTC wakeup timer event. */
-	RTC_CR |= RTC_CR_WUTIE;   /* Enable the interrupt */
+	RTC_CR |= RTC_CR_WUTIE; /* Enable the interrupt */
 }
 
 /*---------------------------------------------------------------------------*/
 /** @brief Disable the wakeup timer interrupt
-    @warning You must unlock the registers before using this function
+	@warning You must unlock the registers before using this function
 
 */
 void rtc_disable_wakeup_timer_interrupt(void)
@@ -97,4 +98,32 @@ void rtc_disable_wakeup_timer_interrupt(void)
 	RTC_CR &= ~RTC_CR_WUTIE;
 }
 
+void rcc_set_rtc_clock_source(enum rcc_osc rtcclk_source)
+{
+	uint32_t reg32;
+
+	/* Clear the RTC clock source selection bits */
+	RCC_BDCR &= ~(RCC_BDCR_RTCSEL_MASK << RCC_BDCR_RTCSEL_SHIFT);
+
+	/* Set the RTC clock source selection bits */
+	switch (rtcclk_source)
+	{
+	case RCC_LSE:
+		RCC_BDCR |= RCC_BDCR_RTCSEL_LSE << RCC_BDCR_RTCSEL_SHIFT;
+		break;
+	case RCC_LSI:
+		RCC_BDCR |= RCC_BDCR_RTCSEL_LSI << RCC_BDCR_RTCSEL_SHIFT;
+		break;
+	case RCC_HSE:
+		RCC_BDCR |= RCC_BDCR_RTCSEL_HSE << RCC_BDCR_RTCSEL_SHIFT;
+		break;
+	}
+
+	/* Wait for the RTC clock source to be ready */
+	reg32 = RCC_BDCR;
+	while ((reg32 & (RCC_BDCR_RTCSEL_MASK << RCC_BDCR_RTCSEL_SHIFT)) != (rtcclk_source << RCC_BDCR_RTCSEL_SHIFT))
+	{
+		reg32 = RCC_BDCR;
+	}
+}
 /**@}*/

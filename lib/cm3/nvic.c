@@ -40,9 +40,10 @@
  * @see STM32F10xxx Cortex-M3 programming manual
  *
  * LGPL License Terms @ref lgpl_license
-*/
+ */
 /**@{*/
 
+#include <libopencmsis/core_cm3.h>
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/cm3/scb.h>
 
@@ -114,8 +115,6 @@ void nvic_clear_pending_irq(uint8_t irqn)
 	NVIC_ICPR(irqn / 32) = (1 << (irqn % 32));
 }
 
-
-
 /*---------------------------------------------------------------------------*/
 /** @brief NVIC Return Enabled Interrupt
  *
@@ -154,7 +153,8 @@ void nvic_set_priority(uint8_t irqn, uint8_t priority)
 	/* code from lpc43xx/nvic.c -- this is quite a hack and alludes to the
 	 * negative interrupt numbers assigned to the system interrupts. better
 	 * handling would mean signed integers. */
-	if (irqn >= NVIC_IRQ_COUNT) {
+	if (irqn >= NVIC_IRQ_COUNT)
+	{
 		/* Cortex-M  system interrupts */
 #if defined(__ARM_ARCH_6M__)
 		/* ARM6M supports only 32bit word access to SHPR registers */
@@ -162,22 +162,40 @@ void nvic_set_priority(uint8_t irqn, uint8_t priority)
 		uint8_t shift = (irqn & 0x3) << 3;
 		uint8_t reg = irqn >> 2;
 		SCB_SHPR32(reg) = ((SCB_SHPR32(reg) & ~(0xFFUL << shift)) |
-				((uint32_t) priority) << shift);
+						   ((uint32_t)priority) << shift);
 #else
 		SCB_SHPR((irqn & 0xF) - 4) = priority;
 #endif
-	} else {
+	}
+	else
+	{
 		/* Device specific interrupts */
 #if defined(__ARM_ARCH_6M__)
 		/* ARM6M supports only 32bit word access to IPR registers */
 		uint8_t shift = (irqn & 0x3) << 3;
 		uint8_t reg = irqn >> 2;
 		NVIC_IPR32(reg) = ((NVIC_IPR32(reg) & ~(0xFFUL << shift)) |
-				((uint32_t) priority) << shift);
+						   ((uint32_t)priority) << shift);
 #else
 		NVIC_IPR(irqn) = priority;
 #endif
 	}
+}
+
+void nvic_set_priority_pre_sub(uint8_t irqn, uint8_t preempt, uint8_t sub)
+{
+	uint8_t tmppriority = 0x00, tmppre = 0x00, tmpsub = 0x0F;
+
+	/* Compute the Corresponding IRQ Priority --------------------------------*/
+	tmppriority = (0x700 - ((SCB->AIRCR) & (uint32_t)0x700)) >> 0x08;
+	tmppre = (0x4 - tmppriority);
+	tmpsub = tmpsub >> tmppriority;
+	tmppriority = preempt << tmppre;
+	tmppriority |= (uint8_t)(sub & tmpsub);
+
+	tmppriority = tmppriority << 0x04;
+
+	NVIC_IPR(irqn) = tmppriority;
 }
 
 /* Those are defined only on CM3 or CM4 */
@@ -208,7 +226,8 @@ uint8_t nvic_get_active_irq(uint8_t irqn)
 
 void nvic_generate_software_interrupt(uint16_t irqn)
 {
-	if (irqn <= 239) {
+	if (irqn <= 239)
+	{
 		NVIC_STIR |= irqn;
 	}
 }
